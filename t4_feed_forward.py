@@ -8,51 +8,43 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 from tabulate import tabulate
-#Neural Network classes
 
-
-
-#Metodoc cambiado
+#Método modificado
 #metodo para cargar datos los datos del archivo JSON
-def cargar(file):
-    redJson = nn.NeuralNetwork()
-    with open(file) as archivo:
-        entrada = json.load(archivo)
-        entradas = entrada['entradas']
-        print("entradas: ",entradas)
-
-        #redJson = red = RedCompleta()
-        for capa in entrada['capas']:
-            capaNueva = ntl.NetLayer()
-            for neurona in capa['neuronas']:
-                w = neurona['pesos']
-                capaNueva.neurons = np.append(capaNueva.neurons,[1,w,0,0])
-            redJson.layers = np.append(redJson.layers, capaNueva)
-
-    for i in range(0,2):
-        for j in range(0,2):
-            vector= [i,j]
-            redJson.evaluar(vector)
-            redJson.imprimirSalidas(vector)
+def load(file):
+    #instanciamos la red
+    neuralNet = nn.NeuralNetwork()
+    with open(file) as oFile:
+        #leemos el archivo en formato JSON
+        jsonF = json.load(oFile)
+        #Iteramos por capas y neuronas
+        for layer in jsonF['capas']:
+            nLayer = ntl.NetLayer()
+            for neuron in layer['neuronas']:
+                w = neuron['pesos']
+                #Añadimos la neurona como arreglos [baias, arregloPesos, g(n), delta)
+                nLayer.neurons.append([1,w,0,0])
+            #Añadimos la capa con las neuronas a la red
+            neuralNet.layers = np.append(neuralNet.layers, nLayer)
+        return neuralNet
 
 
 #metodo cambiado
-#metodo para guardar los datos en el archivo JSON
-def guardar(red, X, ruta):
-    salida ={}
-    salida['entradas'] = X
-    salida['capas'] = []
-    for i in range(len(red.layers)):
-        neuronaJ = {}
-        neuronaJ['neuronas'] = []
-        for j in range(len(red.layers[i].neurons)):
-            neurona = red.layers[i].neurons[j]
-            pesos = {}
-            pesos['pesos'] = neurona[1]
-            neuronaJ['neuronas'].append(pesos)
-        salida['capas'].append(neuronaJ) 
-    with open(ruta, 'w') as file:
-        json.dump(salida, file)
+def save(neuNet, ins, fileO):
+    jsonF ={}
+    jsonF['entradas'] = ins
+    jsonF['capas'] = []
+    for i in range(len(neuNet.layers)):
+        jsonN = {}
+        jsonN['neuronas'] = []
+        for j in range(len(neuNet.layers[i].neurons)):
+            neuron = neuNet.layers[i].neurons[j]
+            w = {}
+            w['pesos'] = neuron[1]
+            jsonN['neuronas'].append(w)
+        jsonF['capas'].append(jsonN) 
+    with open(fileO, 'w') as file:
+        json.dump(jsonF, file)
 
 
 
@@ -66,27 +58,30 @@ if __name__ == "__main__":
     else:
         file = sys.argv[1]
 
-    #archivos JSON - parte1
-    archivo1 = sys.argv[1]
-    
+    #Instanciamos la red entera
     neu_net = nn.NeuralNetwork()
-    #tiene dos entradas, dos capas y dos neuronas x capas
+
+    #Generar Red con pesos aleatorios
+    neu_net.neuRandom(2,2,2) 
     
-    neu_net.generar(2,2,2) 
-    #vectores de entrada
-    print("-----------------> PARTE 1 <---------------------")
+    for i in range(0,2):
+        for j in range(0,2):
+            vector= [i,j]
+            #Evaluamos los vectores
+            neu_net.evaluar(vector)
+            #Imprimimos en consola los resultados
+            neu_net.printG(vector)
+
+    #Guardamos la red en formato JSON
+    save(neu_net, 2, 'FeedFoward_Results/feed_forwards_random_results.json')
+    print("Guardado en 'FeedFoward_Results/feed_forwards_random_results.json'") 
+    neu_net = load(file)
+
+    #Evaluamos la red e imprimimos los resultados de los vectores
     for i in range(0,2):
         for j in range(0,2):
             vector= [i,j]
             neu_net.evaluar(vector)
-            neu_net.imprimir_salidas(vector)
-
-    guardar(neu_net, 2, 'ArchivosJSON/salida_part1.json')
-    print("El archivo se guardo exitosamente! (revisar ArchivosJSON/salida_part1.json)") 
-    #cargar(archivo1)
-
-    #print("")
-    #print("-----------------> PARTE 2 <---------------------")
-    #BackPropagation(trainingData)
-
-    
+            neu_net.printG(vector)
+    save(neu_net, 2, 'FeedFoward_Results/feed_forwards_results.json')
+    print("Guardado en 'FeedFoward_Results/feed_forwards_results.json'")

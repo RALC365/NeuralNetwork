@@ -1,5 +1,6 @@
 from Classes import NetLayer as ntl
 from Classes import NeuralNetwork as nn
+import t4_back_propagation as gp
 
 import sys
 import numpy as np
@@ -7,86 +8,50 @@ from random import uniform
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
-from tabulate import tabulate
-#Neural Network classes
 
 
-
-#Metodoc cambiado
-#metodo para cargar datos los datos del archivo JSON
-def cargar(file):
-    redJson = nn.NeuralNetwork()
-    with open(file) as archivo:
-        entrada = json.load(archivo)
-        entradas = entrada['entradas']
-        print("entradas: ",entradas)
-
-        #redJson = red = RedCompleta()
-        for capa in entrada['capas']:
-            capaNueva = ntl.NetLayer()
-            for neurona in capa['neuronas']:
-                w = neurona['pesos']
-                capaNueva.neurons = np.append(capaNueva.neurons,[1,w,0,0])
-            redJson.layers = np.append(redJson.layers, capaNueva)
-
-    for i in range(0,2):
-        for j in range(0,2):
-            vector= [i,j]
-            redJson.evaluar(vector)
-            redJson.imprimirSalidas(vector)
-
-
-#metodo cambiado
-#metodo para guardar los datos en el archivo JSON
-def guardar(red, X, ruta):
-    salida ={}
-    salida['entradas'] = X
-    salida['capas'] = []
-    for i in range(len(red.layers)):
-        neuronaJ = {}
-        neuronaJ['neuronas'] = []
-        for j in range(len(red.layers[i].neurons)):
-            neurona = red.layers[i].neurons[j]
-            pesos = {}
-            pesos['pesos'] = neurona[1]
-            neuronaJ['neuronas'].append(pesos)
-        salida['capas'].append(neuronaJ) 
-    with open(ruta, 'w') as file:
-        json.dump(salida, file)
-
-
-
-#solo inicia si es el proceso inicial#
+    #py Parte3_4.py part3_data_train.csv
 if __name__ == "__main__":
-    #python t4_feed_forward.py part1.red.prueba.json part2_train_data.csv
-
+    #archivos JSON - parte1
     file = ''
     if len(sys.argv) == 1:
-        file = './Datos/part1_red_prueba.json'
+        file = './Datos/part3_data_train.csv'
     else:
         file = sys.argv[1]
-
-    #archivos JSON - parte1
-    archivo1 = sys.argv[1]
     
-    neu_net = nn.NeuralNetwork()
-    #tiene dos entradas, dos capas y dos neuronas x capas
-    
-    neu_net.generar(2,2,2) 
-    #vectores de entrada
-    print("-----------------> PARTE 1 <---------------------")
-    for i in range(0,2):
-        for j in range(0,2):
-            vector= [i,j]
-            neu_net.evaluar(vector)
-            neu_net.imprimir_salidas(vector)
+    trainingData = pd.read_csv(file, engine='python')
 
-    guardar(neu_net, 2, 'ArchivosJSON/salida_part1.json')
-    print("El archivo se guardo exitosamente! (revisar ArchivosJSON/salida_part1.json)") 
-    #cargar(archivo1)
+    cambio = trainingData.replace({
+        'arroz_frito':'1,0,0,0,0',
+        'ensalada':'0,1,0,0,0',
+        'pollo_horneado':'0,0,1,0,0',
+        'hamburguesa':'0,0,0,1,0',
+        'pizza':'0,0,0,0,1'
+        })
 
-    #print("")
-    #print("-----------------> PARTE 2 <---------------------")
-    #BackPropagation(trainingData)
+    data = cambio.iloc[:,0:5].values
+    datosNormalizados=(data- data.min())/(data.max()- data.min())
 
-    
+    #crear la red - se inicializa con los pesos entre -1 y 1
+    net = nn.NeuralNetwork()  #red = RedCompleta()
+    net.AddHiddenLayer(4,5)  #red.AddCapaOculta(4,5) #4 neuronas, 5 entradas
+    net.AddOutLayer(5)  #red.AddCapaSalida(5) #5 neuronas
+
+    #por lo momentos tarda 5 minutos con una red
+    for i in datosNormalizados[:,:]:
+        for j in range(50): #rondas
+            net.evaluar(i) #red.evaluar(i)
+            gp.calculoGradiente(net,i)    #calculoGradiente(red,i)
+            gp.cambiarPesos(net,i)    #cambiarPesos(red,i)
+
+    net2 = nn.NeuralNetwork()    #red2 = RedCompleta()
+    net2.AddHiddenLayer(16,5)   #red2.AddCapaOculta(16,5) #16 neuronas, 5 entradas
+    net2.AddOutLayer(5)    #red2.AddCapaSalida(5) #5 neuronas
+
+    net3 = nn.NeuralNetwork()
+    net3.AddHiddenLayer(32,5)
+    net3.AddOutLayer(5)
+
+    net4 = nn.NeuralNetwork()
+    net4.AddHiddenLayer(64,5)
+    net4.AddOutLayer(5)

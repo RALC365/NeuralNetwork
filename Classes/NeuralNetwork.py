@@ -7,50 +7,54 @@ class NeuralNetwork:
     def __init__(self):
         self.layers= []
         
-#Método Modificado
-    def evaluar(self, X):
-        for i in range(len(self.layers)):
-            for j in range(len(self.layers[i].neurons)):
-                neuron = self.layers[i].neurons[j]
+    def evaluar(self,vector):
+        ban = 0
+        before = ntl.NetLayer()
+        for layer in self.layers:
+            for neuron in layer.neurons:
                 in0 = 0.0
-                if i==0:
-                    #neuron[0]: bias, neuron[1]: array de pesos
-                    in0 = (neuron[0] * neuron[1][0]) + (neuron[1][1]*X[0]) + (neuron[1][2]*X[1]) 
+                if ban != 0:
+                    in0 = neuron[0] * neuron[1][0]
+                    for i in range(len(before.neurons)):
+                        in0 += neuron[1][i+1] * before.neurons[i][2]
                 else:
-                    in0 = (neuron[0] * neuron[1][0])
-                    #evaluamos la gn de las neurons de la capa enterior 
-                    #-2
-                    for k in range(len(self.layers[i-1].neurons)-2):
-                        anterior = self.layers[i-1].neurons[k]
-                        #print(neuron[1][k+1])
-                        in0 = in0 + (neuron[1][k+1] * anterior[2])
-                neuron[2] = self.layers[i].sigmoide(in0)
+                    in0 = neuron[0] * neuron[1][0]
+                    for i in range(len(vector)):
+                        in0 += neuron[1][i+1] * vector[i]
+                    ban = 1
+                neuron[2] = layer.sigmoide(in0)
+                before = layer
 
 
-#Método Modificado
-    def imprimir_salidas(self,vector):
+    def printG(self,vector):
         imp = []
         imp.append(['Vector', vector])
-        for neuron in self.layers[len(self.layers)-1].neurons:
+        for neuron in self.layers[-1].neurons:
             imp.append(["g(n)",neuron[2]])
         print(tabulate(imp,  headers="firstrow",tablefmt='fancy_grid'))
         
-#Método Modificado
-    # se generan las capas con sus neuronas y los pesos
-    def generar(self, entradas, layers,neurons):
-        #se agregan las capas y
-        for i in range(layers):
+    def neuRandom(self, cIn, cLayers,cNeurons):
+        for i in range(cLayers):
             layer = ntl.NetLayer()
             self.layers.append(layer)
-            for j in range(0,neurons):
-                print("Valor nue: " + str((len(self.layers[i-1].neurons))))
-                self.layers[i].addNeuron(entradas+1)
-                #print("{:.2}".format(self.layers[i].neurons[j].pesos[0]))
-                #print("{:.2}".format(self.layers[i].neurons[j].pesos[1]))
-                #print("{:.2}".format(self.layers[i].neurons[j].pesos[2]))
-                #print("")
-
+            for j in range(0,cNeurons):
+                self.layers[i].addNeuron(cIn+1)
                 if i>0:
-                    #print("cuanto? ",len(self.layers[i-1].neurons))
-                    entradas = len(self.layers[i-1].neurons)
-                    print("Valor: " + str((entradas)))
+                    cIn = len(self.layers[i-1].neurons)
+        
+
+    #Métodos Ejercicio 3
+    def AddHiddenLayer(self, cNeurons, cIn):
+        layer = ntl.NetLayer()
+        for i in range(cNeurons):
+            layer.addNeuron(cIn+1)
+        print("Agregar Capa - Oculta")
+        self.layers.append(layer)
+        
+    def AddOutLayer(self, cNeurons):
+        layer = ntl.NetLayer()
+        cIn = len(self.layers[len(self.layers)-1].neurons)+1
+        for i in range(cNeurons):
+            layer.addNeuron(cIn)
+        print("Agregar Capa - Salida")
+        self.layers.append(layer)
