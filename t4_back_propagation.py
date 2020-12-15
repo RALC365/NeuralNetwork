@@ -8,6 +8,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from tabulate import tabulate
 
+# ignore all future warnings
+from warnings import simplefilter
+simplefilter(action='ignore', category=FutureWarning)
+
 def BackPropagation(datat):
     nets = []
     data = {} #para archivo csv
@@ -20,6 +24,7 @@ def BackPropagation(datat):
     outs = datat.iloc[:,2:4].values
     
     #evaluamos cada red por los 4 vectores de entrada
+    print("Please wait...")
     for i in range(len(ins)):
         vector = ins[i]
         redColumna = []
@@ -27,7 +32,6 @@ def BackPropagation(datat):
         mseMin = []
         mseProm = []
         for net in nets:
-            print("Inicio de RED ",(nets.index(net)+1))
             redColumna.append(nets.index(net)+1)
             errorA =1
             MSE = []
@@ -45,9 +49,7 @@ def BackPropagation(datat):
                 #Si no, continuamos
                 errorA = error
                 MSE.append(errorA)
-                print("  MSE = {:.5}".format(errorA))
             
-            print("MIN = {:.5}".format(np.amin(MSE)), "  MAX = {:.5}".format(np.amax(MSE)), " PRO = {:.5}".format(np.mean(MSE)))
             mseMin.append(np.amin(MSE))
             mseMax.append(np.amax(MSE))
             mseProm.append(np.mean(MSE))
