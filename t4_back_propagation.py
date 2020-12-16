@@ -98,6 +98,7 @@ def BackPropagation(datat, cEpochMax, roundWithoutDecrement, epsilon, validation
                     else:
                         roundSuccesful+=1
                 else:
+                    if((errorA - error) <= epsilon): break
                     #Significa que el error es menor, así que pierde la racha de errores iguales
                     roundSuccesful = 0
                 
@@ -165,6 +166,7 @@ def weightUpdate(net, vector):
                     if j>0:
                         vVector = vector[j-1]
                         neuron[1][j]+=neuron[3]*alfa*vVector
+    return net
 
 def gradient(net,vector):
     for i in range (len(net.layers)):
@@ -180,12 +182,13 @@ def gradient(net,vector):
                 before = net.layers[ind+1].neurons
                 for nBefore in before:
                     a = a + (nBefore[1][0]*nBefore[3])
-            neuron[3] = g*a 
+            neuron[3] = g*a
+    return net
 
 if __name__ == "__main__":
     #Validación de argumentos de entrada. Se quizo hacer one-line pero no
     #Datos de entrenamiento - mandatorio
-    lure =['./Datos/part2_train_data.csv', 100, 1, 0, '']
+    lure =['./Datos/part2_train_data.csv', 100, -1, -1, '']
 
     for i in range(1,len(sys.argv)):
         lure[i-1] = sys.argv[i]

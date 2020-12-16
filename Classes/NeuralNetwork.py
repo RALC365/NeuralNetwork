@@ -12,19 +12,18 @@ class NeuralNetwork:
         before = ntl.NetLayer()
         for layer in self.layers:
             for neuron in layer.neurons:
-                in0 = 0.0
+                x = 0.0
                 if ban != 0:
-                    in0 = neuron[0] * neuron[1][0]
+                    x = neuron[0] * neuron[1][0]
                     for i in range(len(before.neurons)):
-                        in0 += neuron[1][i+1] * before.neurons[i][2]
+                        x += neuron[1][i+1] * before.neurons[i][2]
                 else:
-                    in0 = neuron[0] * neuron[1][0]
+                    x = neuron[0] * neuron[1][0]
                     for i in range(len(vector)):
-                        in0 += neuron[1][i+1] * vector[i]
-                    ban = 1
-                neuron[2] = layer.sigmoide(in0)
-                before = layer
-
+                        x += neuron[1][i+1] * vector[i]
+                neuron[2] = layer.sigmoide(x)
+            ban = 1
+            before = layer
 
     def printG(self,vector):
         imp = []
@@ -48,7 +47,7 @@ class NeuralNetwork:
         layer = ntl.NetLayer()
         for i in range(cNeurons):
             layer.addNeuron(cIn+1)
-        print("Agregar Capa - Oculta")
+        print("Agregando Capa oculta...")
         self.layers.append(layer)
         
     def AddOutLayer(self, cNeurons):
@@ -56,5 +55,5 @@ class NeuralNetwork:
         cIn = len(self.layers[len(self.layers)-1].neurons)+1
         for i in range(cNeurons):
             layer.addNeuron(cIn)
-        print("Agregar Capa - Salida")
+        print("Agregando capa de salida...")
         self.layers.append(layer)
